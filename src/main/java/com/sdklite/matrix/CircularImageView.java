@@ -12,6 +12,7 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.DrawableContainer;
 import android.graphics.drawable.StateListDrawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
@@ -23,6 +24,40 @@ import android.widget.ImageView;
  * @author johnsonlee
  */
 public class CircularImageView extends ImageView {
+
+    /**
+     * Convert drawable to bitmap
+     *
+     * @param drawable
+     * @return
+     */
+    public static Bitmap drawableToBitmap(Drawable drawable) {
+        if (drawable == null) {
+            return null;
+        }
+
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        } else if (drawable instanceof DrawableContainer) {
+            drawable = drawable.getCurrent();
+        }
+
+        final int intrinsicWidth = drawable.getIntrinsicWidth();
+        final int intrinsicHeight = drawable.getIntrinsicHeight();
+
+        if (!(intrinsicWidth > 0 && intrinsicHeight > 0))
+            return null;
+
+        try {
+            final Bitmap bitmap = Bitmap.createBitmap(intrinsicWidth, intrinsicHeight, Bitmap.Config.ARGB_8888);
+            final Canvas canvas = new Canvas(bitmap);
+            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+            drawable.draw(canvas);
+            return bitmap;
+        } catch (final OutOfMemoryError e) {
+            return null;
+        }
+    }
 
     private final Matrix matrix;
 
@@ -75,6 +110,8 @@ public class CircularImageView extends ImageView {
 
     public void setBorderColor(final int borderColor) {
         this.borderColor = borderColor;
+        this.borderPaint.setColor(this.borderColor);
+        invalidate();
     }
 
     public int getBorderWidth() {
@@ -83,29 +120,15 @@ public class CircularImageView extends ImageView {
 
     public void setBorderWidth(final int borderWidth) {
         this.borderWidth = borderWidth;
+        this.borderPaint.setStrokeWidth(this.borderWidth);
+        requestLayout();
+        invalidate();
     }
 
     @Override
     protected void onDraw(final Canvas canvas) {
-        final Drawable drawable = getDrawable();
-        final BitmapDrawable bitmapDrawable;
-
-        if (drawable instanceof StateListDrawable) {
-            if (drawable.getCurrent() != null) {
-                bitmapDrawable = (BitmapDrawable) drawable.getCurrent();
-            } else {
-                bitmapDrawable = null;
-            }
-        } else {
-            bitmapDrawable = (BitmapDrawable) drawable;
-        }
-
-        if (bitmapDrawable == null) {
-            return;
-        }
-
-        final Bitmap bitmap = bitmapDrawable.getBitmap();
-        if (bitmap == null) {
+        final Bitmap bitmap = drawableToBitmap(getDrawable());
+        if (null == bitmap) {
             return;
         }
 
@@ -124,12 +147,15 @@ public class CircularImageView extends ImageView {
      * @param dest   The destination bound on the canvas.
      */
     protected void drawBitmapWithCircleOnCanvas(final Bitmap bitmap, final Canvas canvas, final RectF source, final RectF dest) {
-        final BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         this.matrix.reset();
         this.matrix.setRectToRect(source, dest, Matrix.ScaleToFit.FILL);
+        final BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
         shader.setLocalMatrix(this.matrix);
         this.bitmapPaint.setShader(shader);
         canvas.drawCircle(dest.centerX(), dest.centerY(), dest.width() / 2f, this.bitmapPaint);
-        canvas.drawCircle(dest.centerX(), dest.centerY(), dest.width() / 2f - this.borderWidth / 2, this.borderPaint);
+
+        if (this.borderWidth > 0) {
+            canvas.drawCircle(dest.centerX(), dest.centerY(), (dest.width() - this.borderWidth) / 2f, this.borderPaint);
+        }
     }
 }
