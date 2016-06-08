@@ -1,0 +1,101 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.0.0'
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.3"
+
+    defaultConfig {
+        minSdkVersion 11
+        targetSdkVersion 23
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+configurations {
+    archives {
+        extendsFrom configurations.default
+    }
+}
+
+signing {
+    required { gradle.taskGraph.hasTask('uploadArchives') && !project.POM_VERSION.endsWith('-SNAPSHOT') }
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            pom.project {
+                groupId POM_GROUP_ID
+                artifactId POM_ARTIFACT_ID
+                version POM_VERSION
+                packaging POM_PACKAGING
+
+                name POM_PROJECT_NAME
+                description POM_PROJECT_DESCRIPTION
+                url POM_PROJECT_URL
+                inceptionYear POM_PROJECT_INCEPTION_YEAR
+
+                organization {
+                    name POM_ORG_NAME
+                    url POM_ORG_URL
+                }
+                licenses {
+                    license {
+                        name POM_LICENSE_NAME
+                        url POM_LICENSE_URL
+                        distribution POM_LICENSE_DIST
+                    }
+                }
+                scm {
+                    url POM_SCM_URL
+                    connection POM_SCM_CONNECTION
+                    developerConnection POM_SCM_DEV_CONNECTION
+                    tag POM_SCM_TAG
+                }
+                developers {
+                    developer {
+                        id POM_DEVELOPER_ID
+                        name POM_DEVELOPER_NAME
+                        email POM_DEVELOPER_EMAIL
+                    }
+                }
+            }
+            repository(url: OSSRH_RELEASE_REPOSITORY_URL) {
+                authentication(userName: OSSRH_USERNAME, password: OSSRH_PASSWORD)
+            }
+            snapshotRepository(url: OSSRH_SNAPSHOT_REPOSITORY_URL) {
+                authentication(userName: OSSRH_USERNAME, password: OSSRH_PASSWORD)
+            }
+        }
+    }
+}
