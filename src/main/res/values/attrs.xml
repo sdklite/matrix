@@ -1,0 +1,6 @@
+<resources>
+    <declare-styleable name="CircularImageView">
+        <attr name="circularImageViewBorderWidth" format="dimension" />
+        <attr name="circularImageViewBorderColor" format="color" />
+    </declare-styleable>
+</resources>
