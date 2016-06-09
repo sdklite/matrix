@@ -3,6 +3,8 @@
 Matrix is a widget toolkit for Android, it provides several usefull widgets, such as:
 
 - CircularImageView
+- FlatListView
+- ScrollableViewPager
 
 ## Usage
 
