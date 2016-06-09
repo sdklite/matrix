@@ -3,4 +3,7 @@
         <attr name="circularImageViewBorderWidth" format="dimension" />
         <attr name="circularImageViewBorderColor" format="color" />
     </declare-styleable>
+    <declare-styleable name="ScrollableViewPager">
+        <attr name="scrollable" format="boolean" />
+    </declare-styleable>
 </resources>

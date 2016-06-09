@@ -35,6 +35,10 @@ android {
     }
 }
 
+dependencies {
+    compile 'com.android.support:support-v4:20.0.0'
+}
+
 apply plugin: 'maven'
 apply plugin: 'signing'
 
