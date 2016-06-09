@@ -21,7 +21,7 @@ public class ScrollableViewPager extends ViewPager {
         super(context, attrs);
 
         final TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.ScrollableViewPager);
-        this.scrollable = ta.getBoolean(R.styleable.ScrollableViewPager_scrollable, false);
+        this.scrollable = ta.getBoolean(R.styleable.ScrollableViewPager_scrollableViewPagerScrollable, false);
         ta.recycle();
     }
 
